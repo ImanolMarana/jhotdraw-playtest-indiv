@@ -283,43 +283,52 @@ public class ColorSliderUI extends BasicSliderUI {
   public void paintFocus(Graphics g) {}
 
   public void paintColorTrack(Graphics g, int x, int y, int width, int height, int buffer) {
-    // g.setColor(Color.black);
-    // g.fillRect(x, y, width, height);
     if (colorTrackImageProducer == null
         || colorTrackImageProducer.getWidth() != width
         || colorTrackImageProducer.getHeight() != height) {
-      if (colorTrackImage != null) {
-        colorTrackImage.flush();
-      }
-      colorTrackImageProducer = new ColorTrackImageProducer(
-          width, height, buffer + 2, slider.getOrientation() == JSlider.HORIZONTAL);
-      if (slider.getClientProperty("colorSliderModel") != null) {
-        colorTrackImageProducer.setColorSliderModel(
-            (ColorSliderModel) slider.getClientProperty("colorSliderModel"));
-      }
-      if (slider.getClientProperty("colorComponentIndex") != null) {
-        colorTrackImageProducer.setColorComponentIndex(
-            ((Integer) slider.getClientProperty("colorComponentIndex")));
-      }
-      colorTrackImageProducer.generateColorTrack();
-      colorTrackImage = slider.createImage(colorTrackImageProducer);
+      createColorTrackImage(width, height, buffer);
     } else {
-      if (colorTrackImageProducer.needsGeneration()) {
-        // To keep the UI responsive, we only perform the time consuming
-        // regeneration of the color track if we don't already have
-        // a latency of more than a 10th of a second on the most recent event.
-        long latency = System.currentTimeMillis() - EventQueue.getMostRecentEventTime();
-        if (latency > 100) {
-          slider.repaint();
-        } else {
-          colorTrackImageProducer.regenerateColorTrack();
-        }
-      }
+      regenerateColorTrackIfNeeded();
     }
+
     if (colorTrackImage != null) {
       g.drawImage(colorTrackImage, x, y, slider);
     }
   }
+
+  private void createColorTrackImage(int width, int height, int buffer) {
+    if (colorTrackImage != null) {
+      colorTrackImage.flush();
+    }
+    colorTrackImageProducer =
+        new ColorTrackImageProducer(
+            width, height, buffer + 2, slider.getOrientation() == JSlider.HORIZONTAL);
+    if (slider.getClientProperty("colorSliderModel") != null) {
+      colorTrackImageProducer.setColorSliderModel(
+          (ColorSliderModel) slider.getClientProperty("colorSliderModel"));
+    }
+    if (slider.getClientProperty("colorComponentIndex") != null) {
+      colorTrackImageProducer.setColorComponentIndex(
+          ((Integer) slider.getClientProperty("colorComponentIndex")));
+    }
+    colorTrackImageProducer.generateColorTrack();
+    colorTrackImage = slider.createImage(colorTrackImageProducer);
+  }
+
+  private void regenerateColorTrackIfNeeded() {
+    if (colorTrackImageProducer.needsGeneration()) {
+      // To keep the UI responsive, we only perform the time consuming
+      // regeneration of the color track if we don't already have
+      // a latency of more than a 10th of a second on the most recent event.
+      long latency = System.currentTimeMillis() - EventQueue.getMostRecentEventTime();
+      if (latency > 100) {
+        slider.repaint();
+      } else {
+        colorTrackImageProducer.regenerateColorTrack();
+      }
+    }
+  }
+//Refactoring end
 
   @Override
   protected void calculateTrackRect() {

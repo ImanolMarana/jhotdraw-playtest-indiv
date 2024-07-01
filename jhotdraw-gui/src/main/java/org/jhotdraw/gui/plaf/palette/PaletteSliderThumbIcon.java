@@ -93,43 +93,35 @@ public class PaletteSliderThumbIcon extends MultiIcon {
 
   @Override
   protected Icon getIcon(Component c) {
-    Icon icon;
-    boolean isActive = true; // QuaquaUtilities.isOnActiveWindow(c);
     if (c instanceof JSlider) {
-      JSlider slider = (JSlider) c;
-      if (isActive) {
-        if (c.isEnabled()) {
-          if (slider.getModel().getValueIsAdjusting()) {
-            icon = icons[EP];
-          } else {
-            icon = icons[E];
-          }
-        } else {
-          icon = icons[D];
-        }
-      } else {
-        if (c.isEnabled()) {
-          icon = icons[I];
-        } else {
-          icon = icons[DI];
-        }
-      }
+      return getSliderIcon((JSlider) c);
     } else {
-      if (isActive) {
-        if (c.isEnabled()) {
-          icon = icons[E];
-        } else {
-          icon = icons[D];
-        }
-      } else {
-        if (c.isEnabled()) {
-          icon = icons[I];
-        } else {
-          icon = icons[DI];
-        }
-      }
+      return getDefaultIcon(c);
     }
-    return icon;
+  }
+
+  private Icon getSliderIcon(JSlider slider) {
+    if (slider.getModel().getValueIsAdjusting()) {
+      return icons[EP]; 
+    } else {
+      return getIconByEnabledAndActiveState(slider);
+    }
+  }
+
+  private Icon getDefaultIcon(Component c) {
+    return getIconByEnabledAndActiveState(c);
+  }
+
+  private Icon getIconByEnabledAndActiveState(Component c) {
+    boolean isActive = true; // QuaquaUtilities.isOnActiveWindow(c);
+    if (isActive) {
+      return c.isEnabled() ? icons[E] : icons[D];
+    } else {
+      return c.isEnabled() ? icons[I] : icons[DI];
+    }
+  }
+
+//Refactoring end
   }
 
   @Override
